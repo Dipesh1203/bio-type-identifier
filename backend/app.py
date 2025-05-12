@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify
 import tensorflow as tf
+from flask_cors import CORS
 import numpy as np
 import pickle
 from PIL import Image
 import io
 
 app = Flask(__name__)
+CORS(app)
 
 # Load models
 bloodgroup_model = tf.keras.models.load_model('model/bloodgroup_fingerprint_model.keras')

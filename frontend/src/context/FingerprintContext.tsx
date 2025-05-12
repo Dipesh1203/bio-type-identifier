@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
 // Types
 interface PatternMatch {
@@ -31,115 +31,173 @@ interface FingerprintContextType {
 }
 
 // Create Context
-const FingerprintContext = createContext<FingerprintContextType | undefined>(undefined);
+const FingerprintContext = createContext<FingerprintContextType | undefined>(
+  undefined
+);
 
 // Provider Component
-export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResults | null>(null);
-  
+  const [analysisResults, setAnalysisResults] =
+    useState<AnalysisResults | null>(null);
+
   // Load history from localStorage
   const [analysisHistory, setAnalysisHistory] = useState<HistoryItem[]>(() => {
-    const savedHistory = localStorage.getItem('fingerprintHistory');
+    const savedHistory = localStorage.getItem("fingerprintHistory");
     return savedHistory ? JSON.parse(savedHistory) : [];
   });
 
   // Mock analysis function (simulates API call to ML backend)
-  const analyzeFingerprint = (imageData: string) => {
-    return new Promise<AnalysisResults>((resolve) => {
-      // Simulating API call delay
-      setTimeout(() => {
-        // Generate random results for demonstration
-        const fingerprintTypes = ['Arch', 'Loop', 'Whorl'];
-        const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-        
-        const randomType = fingerprintTypes[Math.floor(Math.random() * fingerprintTypes.length)];
-        const randomBlood = bloodGroups[Math.floor(Math.random() * bloodGroups.length)];
-        
-        // Generate random confidence scores
-        const typeConfidence = Math.floor(Math.random() * 25) + 75; // 75-99%
-        const bloodConfidence = Math.floor(Math.random() * 35) + 65; // 65-99%
-        
-        // Generate random pattern match percentages that add up to 100
-        let arch = Math.floor(Math.random() * 100);
-        let loop = Math.floor(Math.random() * (100 - arch));
-        let whorl = 100 - arch - loop;
-        
-        // Ensure the dominant pattern matches the result
-        if (randomType === 'Arch') {
-          // Swap values to make arch the highest
-          if (arch < loop || arch < whorl) {
-            const temp = arch;
-            arch = Math.max(loop, whorl);
-            if (loop > whorl) {
-              loop = temp;
-            } else {
-              whorl = temp;
-            }
-          }
-        } else if (randomType === 'Loop') {
-          // Swap values to make loop the highest
-          if (loop < arch || loop < whorl) {
-            const temp = loop;
-            loop = Math.max(arch, whorl);
-            if (arch > whorl) {
-              arch = temp;
-            } else {
-              whorl = temp;
-            }
-          }
-        } else { // Whorl
-          // Swap values to make whorl the highest
-          if (whorl < arch || whorl < loop) {
-            const temp = whorl;
-            whorl = Math.max(arch, loop);
-            if (arch > loop) {
-              arch = temp;
-            } else {
-              loop = temp;
-            }
-          }
+  // const analyzeFingerprint = (imageData: string) => {
+  //   return new Promise<AnalysisResults>((resolve) => {
+  //     // Simulating API call delay
+  //     setTimeout(() => {
+  //       // Generate random results for demonstration
+  //       const fingerprintTypes = ['Arch', 'Loop', 'Whorl'];
+  //       const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+  //       const randomType = fingerprintTypes[Math.floor(Math.random() * fingerprintTypes.length)];
+  //       const randomBlood = bloodGroups[Math.floor(Math.random() * bloodGroups.length)];
+
+  //       // Generate random confidence scores
+  //       const typeConfidence = Math.floor(Math.random() * 25) + 75; // 75-99%
+  //       const bloodConfidence = Math.floor(Math.random() * 35) + 65; // 65-99%
+
+  //       // Generate random pattern match percentages that add up to 100
+  //       let arch = Math.floor(Math.random() * 100);
+  //       let loop = Math.floor(Math.random() * (100 - arch));
+  //       let whorl = 100 - arch - loop;
+
+  //       // Ensure the dominant pattern matches the result
+  //       if (randomType === 'Arch') {
+  //         // Swap values to make arch the highest
+  //         if (arch < loop || arch < whorl) {
+  //           const temp = arch;
+  //           arch = Math.max(loop, whorl);
+  //           if (loop > whorl) {
+  //             loop = temp;
+  //           } else {
+  //             whorl = temp;
+  //           }
+  //         }
+  //       } else if (randomType === 'Loop') {
+  //         // Swap values to make loop the highest
+  //         if (loop < arch || loop < whorl) {
+  //           const temp = loop;
+  //           loop = Math.max(arch, whorl);
+  //           if (arch > whorl) {
+  //             arch = temp;
+  //           } else {
+  //             whorl = temp;
+  //           }
+  //         }
+  //       } else { // Whorl
+  //         // Swap values to make whorl the highest
+  //         if (whorl < arch || whorl < loop) {
+  //           const temp = whorl;
+  //           whorl = Math.max(arch, loop);
+  //           if (arch > loop) {
+  //             arch = temp;
+  //           } else {
+  //             loop = temp;
+  //           }
+  //         }
+  //       }
+
+  //       resolve({
+  //         fingerprintType: randomType,
+  //         typeConfidence,
+  //         bloodGroup: randomBlood,
+  //         bloodConfidence,
+  //         patternMatch: {
+  //           arch,
+  //           loop,
+  //           whorl
+  //         }
+  //       });
+  //     }, 2000); // 2 second delay for realism
+  //   });
+  // };
+  const analyzeFingerprint = async (
+    imageData: string
+  ): Promise<AnalysisResults> => {
+    const formData = new FormData();
+
+    // Convert base64 string to Blob
+    const byteString = atob(imageData.split(",")[1]);
+    const mimeString = imageData.split(",")[0].split(":")[1].split(";")[0];
+
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: mimeString });
+    formData.append("image", blob, "fingerprint.png");
+
+    try {
+      // Call /predict_fingerprint
+      const fingerprintRes = await fetch(
+        "http://localhost:5000/predict_fingerprint",
+        {
+          method: "POST",
+          body: formData,
         }
-        
-        resolve({
-          fingerprintType: randomType,
-          typeConfidence,
-          bloodGroup: randomBlood,
-          bloodConfidence,
-          patternMatch: {
-            arch,
-            loop,
-            whorl
-          }
-        });
-      }, 2000); // 2 second delay for realism
-    });
+      );
+      const fingerprintData = await fingerprintRes.json();
+
+      // Call /predict_bloodgroup
+      const bloodRes = await fetch("http://localhost:5000/predict_bloodgroup", {
+        method: "POST",
+        body: formData,
+      });
+      const bloodData = await bloodRes.json();
+
+      return {
+        fingerprintType: fingerprintData.prediction,
+        typeConfidence: Math.floor(Math.random() * 25) + 75, // Simulated confidence
+        bloodGroup: bloodData.prediction,
+        bloodConfidence: Math.floor(Math.random() * 35) + 65, // Simulated confidence
+        patternMatch: {
+          arch: Math.floor(Math.random() * 100),
+          loop: Math.floor(Math.random() * 100),
+          whorl: Math.floor(Math.random() * 100),
+        },
+      };
+    } catch (error) {
+      console.error("Error analyzing fingerprint:", error);
+      throw error;
+    }
   };
 
   const uploadImage = async (imageData: string) => {
     setUploadedImage(imageData);
     setIsAnalyzing(true);
     setAnalysisResults(null);
-    
+
     try {
       // Call the mock analysis function
       const results = await analyzeFingerprint(imageData);
       setAnalysisResults(results);
-      
+
       // Add to history
       const historyItem: HistoryItem = {
         ...results,
         imageUrl: imageData,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-      
+
       const updatedHistory = [historyItem, ...analysisHistory];
       setAnalysisHistory(updatedHistory);
-      localStorage.setItem('fingerprintHistory', JSON.stringify(updatedHistory));
-      
+      localStorage.setItem(
+        "fingerprintHistory",
+        JSON.stringify(updatedHistory)
+      );
     } catch (error) {
-      console.error('Analysis failed:', error);
+      console.error("Analysis failed:", error);
       // Handle error state here
     } finally {
       setIsAnalyzing(false);
@@ -148,14 +206,14 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   const clearHistory = () => {
     setAnalysisHistory([]);
-    localStorage.removeItem('fingerprintHistory');
+    localStorage.removeItem("fingerprintHistory");
   };
 
   const removeHistoryItem = (index: number) => {
     const updatedHistory = [...analysisHistory];
     updatedHistory.splice(index, 1);
     setAnalysisHistory(updatedHistory);
-    localStorage.setItem('fingerprintHistory', JSON.stringify(updatedHistory));
+    localStorage.setItem("fingerprintHistory", JSON.stringify(updatedHistory));
   };
 
   const value = {
@@ -165,7 +223,7 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({ childre
     analysisHistory,
     uploadImage,
     clearHistory,
-    removeHistoryItem
+    removeHistoryItem,
   };
 
   return (
@@ -179,7 +237,9 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({ childre
 export const useFingerprintContext = () => {
   const context = useContext(FingerprintContext);
   if (context === undefined) {
-    throw new Error('useFingerprintContext must be used within a FingerprintProvider');
+    throw new Error(
+      "useFingerprintContext must be used within a FingerprintProvider"
+    );
   }
   return context;
 };
