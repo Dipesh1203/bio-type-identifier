@@ -1,41 +1,77 @@
-# from flask import Flask, request, jsonify
-# from flask_cors import CORS
-# import numpy as np
-# from keras.models import load_model
-# import pickle
-
-# app = Flask(__name__)
-# CORS(app)  # Enable CORS
-
-# model = load_model("model/my_model.keras")
-# with open("model/label_encoder.pkl", "rb") as f:
-#     label_encoder = pickle.load(f)
-
-# @app.route("/predict", methods=["POST"])
-# def predict():
-#     try:
-#         data = request.json["input_data"]  # Expecting a list
-#         input_array = np.array([data])
-#         prediction = model.predict(input_array)
-#         predicted_class = np.argmax(prediction, axis=1)
-#         label = label_encoder.inverse_transform(predicted_class)
-#         return jsonify({"prediction": label[0]})
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 400
-
-# if __name__ == "__main__":
-#     app.run(debug=True)
-
-from flask import Flask
-from flask_cors import CORS
+from flask import Flask, request, jsonify
+import tensorflow as tf
+import numpy as np
+import pickle
+from PIL import Image
+import io
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS
 
-# Register blueprint for predict route
-from src.routes.predict_route import predict_bp
-app.register_blueprint(predict_bp)
+# Load models
+bloodgroup_model = tf.keras.models.load_model('model/bloodgroup_fingerprint_model.keras')
+fingerprint_model = tf.keras.models.load_model('model/fingerprint_model.keras')
 
-if __name__ == "__main__":
+# Load encoders
+with open('model/label_encoder-2.pkl', 'rb') as f:
+    bloodgroup_encoder = pickle.load(f)
+
+with open('model/label_encoder.pkl', 'rb') as f:
+    fingerprint_encoder = pickle.load(f)
+
+# Utility function to preprocess image
+# def preprocess_image(image_bytes, target_size=(224, 224)):
+#     image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+#     image = image.resize(target_size)
+#     image_array = np.array(image) / 255.0  # Normalize if needed
+#     return np.expand_dims(image_array, axis=0)  # Add batch dimension
+def preprocess_image(image_bytes, target_size=(128, 128)):
+    image = Image.open(io.BytesIO(image_bytes)).convert('L')  # Convert to grayscale (1 channel)
+    image = image.resize(target_size)
+    image_array = np.array(image) / 255.0  # Normalize if needed
+    return np.expand_dims(image_array, axis=0)  # Add batch dimension
+
+
+
+
+@app.route('/')
+def index():
+    return "AI Model API is running."
+
+@app.route('/predict_bloodgroup', methods=['POST'])
+def predict_bloodgroup():
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image uploaded'}), 400
+
+        image_file = request.files['image']
+        image_bytes = image_file.read()
+        input_data = preprocess_image(image_bytes)
+
+        prediction = bloodgroup_model.predict(input_data)
+        label = bloodgroup_encoder.inverse_transform([np.argmax(prediction)])
+
+        return jsonify({'prediction': label[0]})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/predict_fingerprint', methods=['POST'])
+def predict_fingerprint():
+    try:
+        bloodgroup_model.summary()
+        fingerprint_model.summary()
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image uploaded'}), 400
+
+        image_file = request.files['image']
+        image_bytes = image_file.read()
+        input_data = preprocess_image(image_bytes)
+
+        prediction = fingerprint_model.predict(input_data)
+        label = fingerprint_encoder.inverse_transform([np.argmax(prediction)])
+
+        return jsonify({'prediction': label[0]})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+if __name__ == '__main__':
     app.run(debug=True)
-
