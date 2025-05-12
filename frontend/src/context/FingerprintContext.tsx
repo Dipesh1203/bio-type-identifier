@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
+const backendUrl = import.meta.env.VITE_URL;
 
 // Types
 interface PatternMatch {
@@ -141,7 +142,8 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
     try {
       // Call /predict_fingerprint
       const fingerprintRes = await fetch(
-        "http://localhost:5000/predict_fingerprint",
+        `${backendUrl}/predict_fingerprint` ||
+          "http://localhost:5000/predict_fingerprint",
         {
           method: "POST",
           body: formData,
@@ -150,10 +152,14 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
       const fingerprintData = await fingerprintRes.json();
 
       // Call /predict_bloodgroup
-      const bloodRes = await fetch("http://localhost:5000/predict_bloodgroup", {
-        method: "POST",
-        body: formData,
-      });
+      const bloodRes = await fetch(
+        `${backendUrl}/predict_bloodgroup` ||
+          "http://localhost:5000/predict_bloodgroup",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
       const bloodData = await bloodRes.json();
 
       return {
