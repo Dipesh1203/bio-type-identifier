@@ -3,14 +3,13 @@ import tensorflow as tf
 from flask_cors import CORS
 import numpy as np
 import pickle
-from PIL import Image
-import io
+import cv2
 
 app = Flask(__name__)
 CORS(app)
 
 # Load models
-bloodgroup_model = tf.keras.models.load_model('model/bloodgroup_fingerprint_model.keras')
+bloodgroup_model = tf.keras.models.load_model('model/bloodgroup_fingerprint_model-3.keras')
 fingerprint_model = tf.keras.models.load_model('model/fingerprint_model.keras')
 
 # Load encoders
@@ -21,16 +20,29 @@ with open('model/label_encoder.pkl', 'rb') as f:
     fingerprint_encoder = pickle.load(f)
 
 # Utility function to preprocess image
-# def preprocess_image(image_bytes, target_size=(224, 224)):
-#     image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+def preprocess_image(image_bytes, target_size=(128, 128)):
+    # Convert bytes to a NumPy array
+    file_bytes = np.asarray(bytearray(image_bytes), dtype=np.uint8)
+    
+    # Decode the image as grayscale
+    image = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
+    
+    # Resize the image
+    image = cv2.resize(image, target_size)
+    
+    # Normalize to [0, 1]
+    image = image / 255.0
+
+    # Expand dimensions to match model input shape (batch, height, width, channels)
+    image = np.expand_dims(image, axis=-1)  # Add channel dimension
+    image = np.expand_dims(image, axis=0)   # Add batch dimension
+    return image
+
+# def preprocess_image(image_bytes, target_size=(128, 128)):
+#     image = Image.open(io.BytesIO(image_bytes)).convert('L')  # Convert to grayscale (1 channel)
 #     image = image.resize(target_size)
 #     image_array = np.array(image) / 255.0  # Normalize if needed
 #     return np.expand_dims(image_array, axis=0)  # Add batch dimension
-def preprocess_image(image_bytes, target_size=(128, 128)):
-    image = Image.open(io.BytesIO(image_bytes)).convert('L')  # Convert to grayscale (1 channel)
-    image = image.resize(target_size)
-    image_array = np.array(image) / 255.0  # Normalize if needed
-    return np.expand_dims(image_array, axis=0)  # Add batch dimension
 
 
 
