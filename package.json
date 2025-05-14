@@ -1,0 +1,26 @@
+{
+  "name": "bio-type-identifier",
+  "version": "1.0.0",
+  "description": "BioIDScan is a web-based biometric analysis system that utilizes deep learning models to analyze fingerprint patterns and predict blood groups. It features a sleek, responsive frontend and a robust backend powered by Flask and TensorFlow.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"npm run start-frontend\" \"npm run start-backend\"",
+    "start-frontend": "cd frontend && npm run dev",
+    "start-backend": "cd backend && .venv\\Scripts\\python app.py"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dipesh1203/bio-type-identifier.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dipesh1203/bio-type-identifier/issues"
+  },
+  "homepage": "https://github.com/Dipesh1203/bio-type-identifier#readme",
+  "dependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
