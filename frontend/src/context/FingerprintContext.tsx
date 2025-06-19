@@ -161,6 +161,7 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
         }
       );
       const bloodData = await bloodRes.json();
+      console.log(bloodData);
 
       return {
         fingerprintType: fingerprintData.prediction,
