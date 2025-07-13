@@ -62,6 +62,12 @@ def predict_bloodgroup():
         input_data = preprocess_image(image_bytes)
 
         prediction = bloodgroup_model.predict(input_data)
+        arr = np.array(prediction)
+        result = arr * 100
+        predicted_class = np.argmax(prediction)
+        confidence = prediction[0][predicted_class] * 100
+        if confidence < 90:
+            return jsonify({'error': 'Prediction confidence is too low. Please try again.'}), 400
         label = bloodgroup_encoder.inverse_transform([np.argmax(prediction)])
 
         return jsonify({'prediction': label[0]})
@@ -81,7 +87,13 @@ def predict_fingerprint():
         input_data = preprocess_image(image_bytes)
 
         prediction = fingerprint_model.predict(input_data)
+        arr = np.array(prediction)
+        result = arr * 100
+
         label = fingerprint_encoder.inverse_transform([np.argmax(prediction)])
+        # print("prediction finger print ",(np.argmax(prediction)*100))
+        predicted_class = np.argmax(prediction)
+        confidence = prediction[0][predicted_class] * 100
 
         return jsonify({'prediction': label[0]})
     except Exception as e:

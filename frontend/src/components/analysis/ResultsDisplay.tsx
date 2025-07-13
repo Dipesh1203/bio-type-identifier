@@ -3,7 +3,7 @@ import { Fingerprint, Droplets, AlertCircle, Loader2 } from "lucide-react";
 import { useFingerprintContext } from "../../context/FingerprintContext";
 
 const ResultsDisplay: React.FC = () => {
-  const { isAnalyzing, analysisResults, uploadedImage } =
+  const { isAnalyzing, analysisResults, uploadedImage, bloodGroupError } =
     useFingerprintContext();
 
   if (isAnalyzing) {
@@ -41,7 +41,7 @@ const ResultsDisplay: React.FC = () => {
         <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
         <p className="text-red-600 text-center font-medium">Analysis failed</p>
         <p className="text-slate-500 text-center mt-2 text-sm">
-          Please try uploading a clearer fingerprint image
+          Prediction confidence is too low. Please try again.
         </p>
       </div>
     );
@@ -85,9 +85,17 @@ const ResultsDisplay: React.FC = () => {
               </h3>
             </div>
             <div className="flex justify-between items-center">
-              <p className="text-xl font-semibold text-slate-800">
-                {analysisResults.bloodGroup}
-              </p>
+              {analysisResults.bloodGroup && (
+                <p className="text-xl font-semibold text-slate-800">
+                  {analysisResults.bloodGroup}
+                </p>
+              )}
+              {bloodGroupError && (
+                <p className="text-sm font-bold text-red-500">
+                  {bloodGroupError}
+                </p>
+              )}
+
               {/* <div className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
                 {analysisResults.bloodConfidence}% confidence
               </div> */}

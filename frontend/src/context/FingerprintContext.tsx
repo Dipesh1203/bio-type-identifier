@@ -50,6 +50,7 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
     const savedHistory = localStorage.getItem("fingerprintHistory");
     return savedHistory ? JSON.parse(savedHistory) : [];
   });
+  const [bloodGroupError, setBloodGroupError] = useState<String | null>();
 
   // Mock analysis function (simulates API call to ML backend)
   // const analyzeFingerprint = (imageData: string) => {
@@ -161,6 +162,12 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
         }
       );
       const bloodData = await bloodRes.json();
+      if (bloodData.error) {
+        setBloodGroupError(
+          "Prediction confidence is too low. Please try again."
+        );
+      }
+      console.log(fingerprintData);
       console.log(bloodData);
 
       return {
@@ -228,6 +235,7 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
     isAnalyzing,
     analysisResults,
     analysisHistory,
+    bloodGroupError,
     uploadImage,
     clearHistory,
     removeHistoryItem,
