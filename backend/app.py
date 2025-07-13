@@ -66,8 +66,8 @@ def predict_bloodgroup():
         result = arr * 100
         predicted_class = np.argmax(prediction)
         confidence = prediction[0][predicted_class] * 100
-        if confidence < 90:
-            return jsonify({'error': 'Prediction confidence is too low. Please try again.'}), 400
+        # if confidence < 90:
+        #     return jsonify({'error': 'Prediction confidence is too low. Please try again.'}), 400
         label = bloodgroup_encoder.inverse_transform([np.argmax(prediction)])
 
         return jsonify({'prediction': label[0]})

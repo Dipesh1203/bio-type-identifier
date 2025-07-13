@@ -44,7 +44,7 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] =
     useState<AnalysisResults | null>(null);
-
+  // const [fileType, setFileType] = useState<string | null>(null);
   // Load history from localStorage
   const [analysisHistory, setAnalysisHistory] = useState<HistoryItem[]>(() => {
     const savedHistory = localStorage.getItem("fingerprintHistory");
@@ -124,7 +124,8 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
   //   });
   // };
   const analyzeFingerprint = async (
-    imageData: string
+    imageData: string,
+    fileType: string
   ): Promise<AnalysisResults> => {
     const formData = new FormData();
 
@@ -167,6 +168,14 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
           "Prediction confidence is too low. Please try again."
         );
       }
+      if (fileType === "image/jpeg" || fileType === "image/jpg") {
+        bloodData.prediction = "Not able to predict blood group";
+      }
+      if (fileType === "image/png") {
+        bloodData.prediction = "Not able to predict blood group";
+        fingerprintData.prediction = "Not able to predict Finger print type";
+      }
+      console.log("file type ====", fileType);
       console.log(fingerprintData);
       console.log(bloodData);
 
@@ -187,14 +196,16 @@ export const FingerprintProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const uploadImage = async (imageData: string) => {
+  const uploadImage = async (imageData: string, fileTyp: string) => {
     setUploadedImage(imageData);
     setIsAnalyzing(true);
     setAnalysisResults(null);
+    // setFileType(fileTyp);
+    console.log("type 3 ", fileTyp);
 
     try {
       // Call the mock analysis function
-      const results = await analyzeFingerprint(imageData);
+      const results = await analyzeFingerprint(imageData, fileTyp);
       setAnalysisResults(results);
 
       // Add to history

@@ -3,7 +3,7 @@ import { Fingerprint, Droplets, AlertCircle, Loader2 } from "lucide-react";
 import { useFingerprintContext } from "../../context/FingerprintContext";
 
 const ResultsDisplay: React.FC = () => {
-  const { isAnalyzing, analysisResults, uploadedImage, bloodGroupError } =
+  const { isAnalyzing, analysisResults, uploadedImage } =
     useFingerprintContext();
 
   if (isAnalyzing) {
@@ -88,11 +88,6 @@ const ResultsDisplay: React.FC = () => {
               {analysisResults.bloodGroup && (
                 <p className="text-xl font-semibold text-slate-800">
                   {analysisResults.bloodGroup}
-                </p>
-              )}
-              {bloodGroupError && (
-                <p className="text-sm font-bold text-red-500">
-                  {bloodGroupError}
                 </p>
               )}
 
