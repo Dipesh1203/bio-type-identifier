@@ -1,5 +1,5 @@
 
-# 🧬 BioIDScan | (Live Link)[https://bio-type-identifier.vercel.app/]
+# 🧬 BioIDScan | [Live Link](https://bio-type-identifier.vercel.app/)
 
 BioIDScan is a web-based biometric analysis system that utilizes deep learning models to analyze fingerprint patterns and predict blood groups. It features a sleek, responsive frontend and a robust backend powered by Flask and TensorFlow.
 
